@@ -7,14 +7,14 @@ import {Link, useNavigate} from "react-router-dom";
 type PropsType = {
     _id: string
     title: string
-    isStared: boolean
+    isStar: boolean
     isPublished: boolean
     answerCount: number
     createdAt: string
 }
 
 const QuestionCard: FC<PropsType> = (props: PropsType) => {
-    const {_id, title, createdAt, answerCount, isPublished, isStared} = props;
+    const {_id, title, createdAt, answerCount, isPublished, isStar} = props;
     const navigate = useNavigate()
     const {confirm} = Modal;
 
@@ -46,7 +46,7 @@ const QuestionCard: FC<PropsType> = (props: PropsType) => {
                     <div className={styles.left}>
                         <Link to={isPublished ? `/question/statistics/${_id}` : `/question/edit/${_id}`}>
                             <Space>
-                                {isStared && <StarOutlined style={{color: 'red'}}/>}
+                                {isStar && <StarOutlined style={{color: 'red'}}/>}
                                 {title}
                             </Space>
                         </Link>
