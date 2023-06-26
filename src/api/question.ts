@@ -16,6 +16,8 @@ type SearchParam = {
     keyword: string,
     isStar: boolean,
     isDeleted: boolean,
+    pageSize: number,
+    pageIndex: number,
 }
 
 // 获取所有问卷

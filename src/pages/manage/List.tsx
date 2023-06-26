@@ -1,18 +1,77 @@
-import React, {FC, useState} from 'react'
+import React, {FC, useEffect, useRef, useState} from 'react'
 import styles from './common.module.scss'
 import QuestionCard from '../../components/QuestionCard'
-import {useTitle} from "ahooks";
+import {useDebounceFn, useRequest, useTitle} from "ahooks";
 import {Spin, Typography} from "antd";
 import ListSearch from "../../components/ListSearch";
 import {getQuestionListService} from "../../api/question";
-import useLoadQuestionListData from "../../hooks/useLoadQuestionListData";
+import {useSearchParams} from "react-router-dom";
+import {LIST_SEARCH_DEFAULT_PAGE_SIZE, LIST_SEARCH_PARAM_KEY} from "../../constants";
 
 const {Title} = Typography
 
 const List: FC = () => {
     useTitle('my questionnaire')
-    const {data = {}, loading} = useLoadQuestionListData()
-    const {list: questionList = [], total = 0} = data
+    const [questionList, setQuestionList] = useState([])
+    const [total, setTotal] = useState(0)
+    const [pageIndex, setPageIndex] = useState(1)
+
+    const haveMore = total > questionList.length
+
+    const [searchParams] = useSearchParams();
+
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    const {run: load, loading} = useRequest(async () => {
+        return await getQuestionListService({
+            pageIndex,
+            pageSize: LIST_SEARCH_DEFAULT_PAGE_SIZE,
+            keyword: searchParams.get(LIST_SEARCH_PARAM_KEY) || '',
+        })
+    }, {
+        manual: true,
+        onSuccess(result) {
+            const {list: resultList = [], total = 0} = result
+            setQuestionList(questionList.concat(resultList))
+            setTotal(total)
+            setPageIndex(pageIndex + 1)
+        },
+    })
+
+    const {run: tryLoadMore} = useDebounceFn(() => {
+        const element = containerRef.current
+        if (element == null) {
+            return
+        }
+        const domRect = element.getBoundingClientRect()
+        if (domRect == null) {
+            return
+        }
+        const bottom = domRect.bottom
+
+        // 底部完全漏出来时，加载更多
+        if (bottom <= document.body.clientHeight) {
+            load()
+        }
+    }, {
+        wait: 1000,
+    })
+
+    // 加载列表数据
+    useEffect(() => {
+        tryLoadMore()
+    }, [searchParams])
+
+    // 页面滚动时，触发加载更多
+    useEffect(() => {
+        if (haveMore) {
+            window.addEventListener('scroll', tryLoadMore) // 组件挂载时，添加事件监听，防抖
+
+        }
+        return () => {
+            window.removeEventListener('scroll', tryLoadMore) // 组件卸载时，移除事件监听
+        }
+    }, [searchParams, haveMore])
 
     return (
         <>
@@ -35,7 +94,11 @@ const List: FC = () => {
                     return <QuestionCard key={_id} {...q} />
                 })}
             </div>
-            <div className={styles.footer}>Load more...</div>
+            <div className={styles.footer}>
+                <div ref={containerRef}>
+                    load more
+                </div>
+            </div>
         </>
     )
 }

@@ -6,6 +6,7 @@ import {Button, Modal, Space, Spin, Table, Tag, Typography} from "antd";
 import {ExclamationCircleOutlined} from "@ant-design/icons";
 import ListSearch from "../../components/ListSearch";
 import useLoadQuestionListData from "../../hooks/useLoadQuestionListData";
+import ListPage from "../../components/ListPage";
 
 const {Title} = Typography
 
@@ -90,7 +91,7 @@ const Trash: FC = () => {
                 {!loading && questionList.length === 0 && <div className={styles.empty}>no questionnaire</div>}
                 {!loading && questionList.length > 0 && TableElement}
             </div>
-            <div className={styles.footer}>pageInfo</div>
+            <div className={styles.footer}><ListPage total={total}/></div>
         </>
     )
 }

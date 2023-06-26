@@ -1,10 +1,11 @@
 import React, {FC, useState} from 'react'
 import styles from './common.module.scss'
 import QuestionCard from '../../components/QuestionCard'
-import {Spin, Typography} from "antd";
+import {Pagination, Spin, Typography} from "antd";
 import {useTitle} from "ahooks";
 import ListSearch from "../../components/ListSearch";
 import useLoadQuestionListData from "../../hooks/useLoadQuestionListData";
+import ListPage from "../../components/ListPage";
 
 const {Title} = Typography
 
@@ -34,7 +35,9 @@ const Star: FC = () => {
                     return <QuestionCard key={_id} {...q} />
                 })}
             </div>
-            <div className={styles.footer}>pageInfo</div>
+            <div className={styles.footer}>
+                <ListPage total={total}/>
+            </div>
         </>
     )
 }
